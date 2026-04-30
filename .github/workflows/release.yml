@@ -28,7 +28,7 @@ jobs:
           $tag = "${{ github.ref_name }}"
           $asset = "rl_uploader-$tag-x86_64-pc-windows-msvc.zip"
           New-Item -ItemType Directory -Path dist -Force | Out-Null
-          Compress-Archive -Path target\release\rl_uploader.exe -DestinationPath "dist\$asset"
+          Compress-Archive -Path target\release\rl_uploader.exe, .env.example -DestinationPath "dist\$asset"
           Write-Host "Created: dist\$asset"
 
       - name: Create release
