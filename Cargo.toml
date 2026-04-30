@@ -1,6 +1,6 @@
 [package]
 name = "rl_uploader"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 authors = ["Kazuma Tago"]
 description = "Auto-uploads Rocket League replays to ballchasing.com via the in-game Stats API"

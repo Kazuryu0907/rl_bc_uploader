@@ -10,6 +10,7 @@ pub fn check_and_apply() -> Result<()> {
         .repo_name("rl_bc_uploader")
         .bin_name("rl_uploader")
         .show_download_progress(false)
+        .no_confirm(true)
         .current_version(cargo_crate_version!())
         .build()?
         .update()?;
