@@ -94,7 +94,7 @@ BALLCHASING_TOKEN=AbCdEf1234567890aBcDeF1234567890aBcDeF12
 - 試合終了画面で「リプレイを保存」を押し忘れた
   - → 押し忘れた試合はアップロードできません(リプレイファイル自体が作られないため)
 
-### ログに `[Upload] failed: HTTP 401` と出る
+### `[失敗] アップロード: HTTP 401` のメッセージが出る
 - ballchasing.com の Token が間違っている
 - → 手順 1 をやり直して Token を貼り直し、`rl_uploader.exe` を再起動
 
@@ -151,14 +151,15 @@ Rocket League (Stats API)
 
 ログ(`logs/rl_uploader.log.<UTC日付>`、日次ローテーション)で注目すべきイベント:
 
-| イベント | 意味 |
+| メッセージ | 意味 |
 |---|---|
-| `connecting to ...` / `connected` | Stats API への接続成功 |
-| `[MatchEnded]` | 試合終了を受信 |
-| `[Upload] found: <path>` | リプレイファイルを検出 |
-| `[Upload] success id=<uuid>` | アップロード成功 |
-| `[Upload] failed: ...` | アップロード失敗 |
-| `[Upload] watcher error: timed out` | `WATCH_TIMEOUT_SECS` 内に手動セーブされなかった(設計通り) |
+| `Rocket League (Stats API) に接続中` → `[OK] 接続しました` | Stats API への接続成功 |
+| `[試合終了]` | 試合終了を受信 |
+| `[検出]` | リプレイファイルを検出 |
+| `[完了]` | アップロード成功 |
+| `[失敗]` | アップロード失敗(HTTP コード等が続く) |
+| `[スキップ]` | `WATCH_TIMEOUT_SECS` 内にリプレイが手動セーブされなかった(設計通り) |
+| `[アップデート]` | 起動時の自動アップデート確認の結果 |
 
 ---
 
