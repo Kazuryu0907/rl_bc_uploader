@@ -18,6 +18,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-build
 
       - name: Build release binary
         run: cargo build --release
