@@ -16,12 +16,12 @@ pub fn check_and_apply() -> Result<()> {
 
     if status.updated() {
         tracing::info!(
-            "[update] applied v{} -> exiting; relaunch to run the new version",
+            "[アップデート] v{} を適用しました — 再起動してください",
             status.version()
         );
         std::process::exit(0);
     } else {
-        tracing::info!("[update] up-to-date (v{})", cargo_crate_version!());
+        tracing::info!("[アップデート] 最新版です (v{})", cargo_crate_version!());
     }
     Ok(())
 }
