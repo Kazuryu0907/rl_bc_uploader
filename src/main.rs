@@ -1,5 +1,6 @@
 mod events;
 mod listener;
+mod update;
 mod uploader;
 mod watcher;
 
@@ -20,6 +21,24 @@ pub struct Config {
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
+
+    let file_appender = tracing_appender::rolling::daily("logs", "rl_uploader.log");
+    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+
+    tracing_subscriber::fmt()
+        .with_writer(non_blocking.with_max_level(tracing::Level::DEBUG))
+        .with_ansi(false)
+        .init();
+
+    // Self-update check (skip by setting SKIP_UPDATE=1).
+    // self_update is blocking, so run it on a blocking thread.
+    if std::env::var("SKIP_UPDATE").is_err() {
+        match tokio::task::spawn_blocking(update::check_and_apply).await {
+            Ok(Ok(())) => {}
+            Ok(Err(e)) => tracing::warn!("[update] check failed: {e}"),
+            Err(e) => tracing::warn!("[update] task panicked: {e}"),
+        }
+    }
 
     let token = std::env::var("BALLCHASING_TOKEN")
         .expect("BALLCHASING_TOKEN not set in .env");
@@ -49,14 +68,6 @@ async fn main() {
         .and_then(|s| s.parse().ok())
         .unwrap_or(300);
     let watch_timeout = Duration::from_secs(watch_timeout_secs);
-
-    let file_appender = tracing_appender::rolling::daily("logs", "rl_uploader.log");
-    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
-
-    tracing_subscriber::fmt()
-        .with_writer(non_blocking.with_max_level(tracing::Level::DEBUG))
-        .with_ansi(false)
-        .init();
 
     let cfg = Arc::new(Config {
         token,

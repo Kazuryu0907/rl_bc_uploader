@@ -19,3 +19,4 @@ tracing-appender = "0.2"
 anyhow = "1"
 reqwest = { version = "0.12", features = ["multipart", "json"] }
 dotenvy = "0.15"
+self_update = { version = "0.44.0", features = ["compression-flate2", "archive-zip"] }
