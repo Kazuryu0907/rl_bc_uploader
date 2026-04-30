@@ -1,0 +1,21 @@
+[package]
+name = "rl_uploader"
+version = "0.1.0"
+edition = "2024"
+authors = ["Kazuma Tago"]
+description = "Auto-uploads Rocket League replays to ballchasing.com via the in-game Stats API"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+keywords = ["rocket-league", "ballchasing", "replay"]
+categories = ["command-line-utilities", "games"]
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tracing-appender = "0.2"
+anyhow = "1"
+reqwest = { version = "0.12", features = ["multipart", "json"] }
+dotenvy = "0.15"

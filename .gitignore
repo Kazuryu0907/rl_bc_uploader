@@ -1,0 +1,9 @@
+/target
+.env
+logs/
+
+# local debugging / exploration artifacts
+rl_write_events.log
+find_rl_files.ps1
+get_rl_handles.ps1
+watch_rl_writes.ps1
