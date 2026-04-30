@@ -28,12 +28,14 @@ jobs:
         shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
-          $asset = "rl_uploader-$tag-x86_64-pc-windows-msvc.zip"
+          $asset = "rl_uploader-$tag-x86_64-pc-windows-msvc.tar.gz"
           New-Item -ItemType Directory -Path dist -Force | Out-Null
-          # Use 7z (standard Deflate) instead of Compress-Archive — the latter
-          # emits Zip64 / Deflate64 records that the `zip` crate used by
-          # self_update can't read.
-          & 7z a -tzip -mm=Deflate "dist\$asset" "target\release\rl_uploader.exe" ".env.example"
+          New-Item -ItemType Directory -Path staging -Force | Out-Null
+          Copy-Item target\release\rl_uploader.exe staging\
+          Copy-Item .env.example staging\
+          # tar.gz keeps self_update on the well-trodden tar+flate2 path and
+          # avoids zip crate quirks (Deflate64 / NTFS extras / Zip64 records).
+          tar -czvf "dist\$asset" -C staging rl_uploader.exe .env.example
           Write-Host "Created: dist\$asset"
 
       - name: Create release
