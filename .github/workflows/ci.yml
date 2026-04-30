@@ -12,7 +12,8 @@ jobs:
   build:
     # Skip when the head commit is a release commit (e.g. "v0.1.4: ...").
     # release.yml runs on the v* tag push and would otherwise duplicate the build.
-    if: ${{ github.event_name != 'push' || !(startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, ': ')) }}
+    # Value is quoted because the embedded ": " literal otherwise breaks YAML parsing.
+    if: "github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'v') || !contains(github.event.head_commit.message, ': ')"
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
