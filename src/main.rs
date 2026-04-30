@@ -4,10 +4,10 @@ mod update;
 mod uploader;
 mod watcher;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use tracing_subscriber::{filter::LevelFilter, fmt, prelude::*};
 
 pub struct Config {
@@ -28,9 +28,39 @@ fn pause_then_exit(code: u8) -> ! {
     std::process::exit(code as i32);
 }
 
+const LOG_RETENTION_DAYS: u64 = 14;
+
+fn cleanup_old_logs(dir: &Path) {
+    let cutoff = match SystemTime::now()
+        .checked_sub(Duration::from_secs(LOG_RETENTION_DAYS * 86_400))
+    {
+        Some(t) => t,
+        None => return,
+    };
+    let entries = match std::fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+        let modified = match entry.metadata().and_then(|m| m.modified()) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+        if modified < cutoff {
+            let _ = std::fs::remove_file(&path);
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> ExitCode {
     dotenvy::dotenv().ok();
+
+    cleanup_old_logs(Path::new("logs"));
 
     // File: full debug + timestamps. Console: info-and-up, plain message only.
     let file_appender = tracing_appender::rolling::daily("logs", "rl_uploader.log");
@@ -125,11 +155,7 @@ async fn main() -> ExitCode {
     );
 
     if let Err(e) = listener::run(cfg).await {
-        tracing::error!("[エラー] 接続エラー: {e}");
-        eprintln!();
-        eprintln!("Rocket League が起動していて、Stats API (PacketSendRate=30) が");
-        eprintln!("有効になっているか確認してください。");
-        eprintln!("詳しくは README の「うまく動かないとき」を参照。");
+        tracing::error!("[エラー] 想定外のエラー: {e}");
         pause_then_exit(1);
     }
 

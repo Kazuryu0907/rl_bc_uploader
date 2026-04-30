@@ -33,121 +33,6 @@ pub struct BallLastTouch {
 }
 
 // ---------------------------------------------------------------------------
-// UpdateState
-// ---------------------------------------------------------------------------
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct Player {
-    #[serde(rename = "Name")]
-    pub name: String,
-    #[serde(rename = "PrimaryId")]
-    pub primary_id: String,
-    #[serde(rename = "Shortcut")]
-    pub shortcut: i32,
-    #[serde(rename = "TeamNum")]
-    pub team_num: i32,
-    #[serde(rename = "Score")]
-    pub score: i32,
-    #[serde(rename = "Goals")]
-    pub goals: i32,
-    #[serde(rename = "Shots")]
-    pub shots: i32,
-    #[serde(rename = "Assists")]
-    pub assists: i32,
-    #[serde(rename = "Saves")]
-    pub saves: i32,
-    #[serde(rename = "Touches")]
-    pub touches: i32,
-    #[serde(rename = "CarTouches")]
-    pub car_touches: i32,
-    #[serde(rename = "Demos")]
-    pub demos: i32,
-    // SPECTATOR fields
-    #[serde(rename = "bHasCar", skip_serializing_if = "Option::is_none")]
-    pub has_car: Option<bool>,
-    #[serde(rename = "Speed", skip_serializing_if = "Option::is_none")]
-    pub speed: Option<f64>,
-    #[serde(rename = "Boost", skip_serializing_if = "Option::is_none")]
-    pub boost: Option<i32>,
-    #[serde(rename = "bBoosting", skip_serializing_if = "Option::is_none")]
-    pub boosting: Option<bool>,
-    #[serde(rename = "bOnGround", skip_serializing_if = "Option::is_none")]
-    pub on_ground: Option<bool>,
-    #[serde(rename = "bOnWall", skip_serializing_if = "Option::is_none")]
-    pub on_wall: Option<bool>,
-    #[serde(rename = "bPowersliding", skip_serializing_if = "Option::is_none")]
-    pub powersliding: Option<bool>,
-    #[serde(rename = "bDemolished", skip_serializing_if = "Option::is_none")]
-    pub demolished: Option<bool>,
-    #[serde(rename = "bSupersonic", skip_serializing_if = "Option::is_none")]
-    pub supersonic: Option<bool>,
-    // CONDITIONAL
-    #[serde(rename = "Attacker", skip_serializing_if = "Option::is_none")]
-    pub attacker: Option<PlayerRef>,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct Team {
-    #[serde(rename = "Name")]
-    pub name: String,
-    #[serde(rename = "TeamNum")]
-    pub team_num: i32,
-    #[serde(rename = "Score")]
-    pub score: i32,
-    #[serde(rename = "ColorPrimary")]
-    pub color_primary: String,
-    #[serde(rename = "ColorSecondary")]
-    pub color_secondary: String,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct Ball {
-    #[serde(rename = "Speed")]
-    pub speed: f64,
-    #[serde(rename = "TeamNum")]
-    pub team_num: i32,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct Game {
-    #[serde(rename = "Teams")]
-    pub teams: Vec<Team>,
-    #[serde(rename = "TimeSeconds")]
-    pub time_seconds: i32,
-    #[serde(rename = "bOvertime")]
-    pub overtime: bool,
-    #[serde(rename = "Ball")]
-    pub ball: Ball,
-    #[serde(rename = "bReplay")]
-    pub replay: bool,
-    #[serde(rename = "bHasWinner")]
-    pub has_winner: bool,
-    #[serde(rename = "Winner")]
-    pub winner: String,
-    #[serde(rename = "Arena")]
-    pub arena: String,
-    #[serde(rename = "bHasTarget")]
-    pub has_target: bool,
-    // CONDITIONAL
-    #[serde(rename = "Target", skip_serializing_if = "Option::is_none")]
-    pub target: Option<PlayerRef>,
-    #[serde(rename = "Frame", skip_serializing_if = "Option::is_none")]
-    pub frame: Option<i32>,
-    #[serde(rename = "Elapsed", skip_serializing_if = "Option::is_none")]
-    pub elapsed: Option<f64>,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct UpdateStateData {
-    #[serde(rename = "MatchGuid")]
-    pub match_guid: String,
-    #[serde(rename = "Players")]
-    pub players: Vec<Player>,
-    #[serde(rename = "Game")]
-    pub game: Game,
-}
-
-// ---------------------------------------------------------------------------
 // BallHit
 // ---------------------------------------------------------------------------
 
@@ -287,7 +172,7 @@ pub struct Envelope {
 
 #[derive(Debug, Clone)]
 pub enum RLEvent {
-    UpdateState(UpdateStateData),
+    UpdateState,
     BallHit(BallHitData),
     CrossbarHit(CrossbarHitData),
     GoalScored(GoalScoredData),
@@ -314,7 +199,7 @@ impl RLEvent {
     pub fn from_envelope(env: Envelope) -> anyhow::Result<Self> {
         let d = &env.data;
         let ev = match env.event.as_str() {
-            "UpdateState"          => RLEvent::UpdateState(serde_json::from_str(d)?),
+            "UpdateState"          => RLEvent::UpdateState,
             "BallHit"              => RLEvent::BallHit(serde_json::from_str(d)?),
             "CrossbarHit"          => RLEvent::CrossbarHit(serde_json::from_str(d)?),
             "GoalScored"           => RLEvent::GoalScored(serde_json::from_str(d)?),

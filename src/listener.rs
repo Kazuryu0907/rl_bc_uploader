@@ -7,28 +7,53 @@ use tokio::net::TcpStream;
 use crate::Config;
 use crate::events::{Envelope, RLEvent};
 
+const RECONNECT_DELAY: Duration = Duration::from_secs(3);
+
 pub async fn run(cfg: Arc<Config>) -> anyhow::Result<()> {
     tracing::info!("Rocket League (Stats API) に接続中: {}", cfg.tcp_addr);
+    let mut announced_waiting = false;
 
-    let mut stream = TcpStream::connect(&cfg.tcp_addr).await?;
-    tracing::info!("[OK] 接続しました — 試合の終了を待機中...");
+    loop {
+        match TcpStream::connect(&cfg.tcp_addr).await {
+            Ok(stream) => {
+                announced_waiting = false;
+                tracing::info!("[OK] 接続しました — 試合の終了を待機中...");
+                if let Err(e) = read_loop(stream, &cfg).await {
+                    tracing::debug!("read loop error: {e}");
+                }
+                tracing::info!(
+                    "[切断] Rocket League との接続が切れました — 再接続を試みます"
+                );
+            }
+            Err(e) => {
+                if !announced_waiting {
+                    tracing::warn!(
+                        "[待機] Rocket League に接続できません ({e}) — 起動と PacketSendRate=30 を確認してください"
+                    );
+                    announced_waiting = true;
+                } else {
+                    tracing::debug!("connect retry: {e}");
+                }
+            }
+        }
+        tokio::time::sleep(RECONNECT_DELAY).await;
+    }
+}
 
+async fn read_loop(mut stream: TcpStream, cfg: &Arc<Config>) -> anyhow::Result<()> {
     let mut buf: Vec<u8> = Vec::with_capacity(64 * 1024);
     let mut tmp = [0u8; 8192];
 
     loop {
         let n = stream.read(&mut tmp).await?;
         if n == 0 {
-            tracing::info!("[切断] Rocket League との接続が切れました");
-            break;
+            return Ok(());
         }
         buf.extend_from_slice(&tmp[..n]);
 
-        let consumed = parse_buf(&buf, &cfg);
+        let consumed = parse_buf(&buf, cfg);
         buf.drain(..consumed);
     }
-
-    Ok(())
 }
 
 /// バッファから完結した JSON オブジェクトをすべて処理し、消費したバイト数を返す
@@ -64,7 +89,7 @@ fn parse_buf(buf: &[u8], cfg: &Arc<Config>) -> usize {
 
 fn handle(event: RLEvent, cfg: &Arc<Config>) {
     match event {
-        RLEvent::UpdateState(_) => tracing::debug!("UpdateState"),
+        RLEvent::UpdateState => tracing::debug!("UpdateState"),
         RLEvent::MatchCreated(d) => tracing::debug!("[MatchCreated] guid={}", d.match_guid),
         RLEvent::MatchInitialized(d) => {
             tracing::debug!("[MatchInitialized] guid={}", d.match_guid)
