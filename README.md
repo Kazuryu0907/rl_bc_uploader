@@ -6,19 +6,14 @@
 
 毎回手動でアップロードする手間がなくなります。BakkesMod も不要です。
 
----
+
+English: See [README_ENG.md](./README_ENG.md).
 
 ## 必要なもの
 
 - Windows 10 / 11(64-bit)
 - Rocket League(Steam 版・Epic 版どちらでも OK)
 - ballchasing.com のアカウント(無料)
-
----
-
-## English
-
-See [README_ENG.md](./README_ENG.md).
 
 ---
 
