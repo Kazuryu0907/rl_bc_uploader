@@ -4,7 +4,7 @@
 
 **Rocket League の試合が終わると、自動でリプレイを [ballchasing.com](https://ballchasing.com) にアップロードしてくれるツール。**
 
-毎回手動でアップロードする手間がなくなります。BakkesMod も不要です。
+毎回手動でアップロードする手間がなくなります。BakkesMod も不要でEAC対応です。
 
 
 English: See [README_ENG.md](./README_ENG.md).
